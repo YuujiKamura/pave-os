@@ -1,0 +1,11 @@
+# 抽出結果（工事固有データ）
+output/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# temp
+*.tmp
