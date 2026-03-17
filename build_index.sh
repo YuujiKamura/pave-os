@@ -48,9 +48,21 @@ awk '
   label = "unknown"
   importance = "low"
 
+  # 設計図書（入札時の最重要資料）
+  if (fname ~ /工事設計書/) { label = "design_document"; importance = "critical" }
+  else if (fname ~ /特記仕様書/) { label = "special_spec"; importance = "critical" }
+  else if (fname ~ /共通仕様書/) { label = "common_spec"; importance = "high" }
+  else if (fname ~ /施工条件明示/) { label = "conditions_list"; importance = "high" }
+  else if (fname ~ /公告文/) { label = "public_notice"; importance = "medium" }
+  # サフィックス規則（発注者のファイル命名慣行: k=金額, s=仕様, z=図面, h=福利費）
+  else if (fname ~ /k[0-9]+\.(pdf|xlsx?)$/) { label = "cost_document"; importance = "high" }
+  else if (fname ~ /s[0-9]+\.(pdf|docx?)$/) { label = "spec_document"; importance = "high" }
+  else if (fname ~ /z[0-9]+\.(pdf)$/) { label = "plan_drawing"; importance = "high" }
+  else if (fname ~ /h[0-9]+\.(pdf)$/) { label = "welfare_cost"; importance = "medium" }
+
   # 契約・入札
-  if (fname ~ /契約|keiyaku/) { label = "contract"; importance = "high" }
-  else if (fname ~ /入札/) { label = "bid"; importance = "high" }
+  else if (fname ~ /契約|keiyaku/) { label = "contract"; importance = "high" }
+  else if (fname ~ /入札/) { label = "bid"; importance = "medium" }
   else if (fname ~ /落札/) { label = "bid_result"; importance = "high" }
 
   # 着工・竣工
@@ -70,6 +82,14 @@ awk '
   # 設計・図面
   else if (ext_lower ~ /^(dxf|dwg|jww)$/) { label = "cad_drawing"; importance = "medium" }
   else if (fname ~ /平面図|横断図|縦断図|展開図/) { label = "drawing"; importance = "medium" }
+
+  # 地下埋設
+  else if (fname ~ /地下埋設|埋設物/) { label = "buried_utility"; importance = "medium" }
+  else if (fname ~ /立会/) { label = "buried_utility"; importance = "medium" }
+
+  # 下請
+  else if (fname ~ /見積/) { label = "estimate"; importance = "medium" }
+  else if (fname ~ /下請契約/) { label = "subcontract"; importance = "medium" }
 
   # 材料
   else if (fname ~ /材料|承認願/) { label = "material_approval"; importance = "medium" }
