@@ -34,25 +34,65 @@ echo "[2/3] Building folder summary..."
 CONTEXT_FILE=$(mktemp)
 
 cat > "$CONTEXT_FILE" << 'HEADER'
-以下は完成した日本の舗装補修工事プロジェクトのフォルダ構成サマリです。
+# 日本の公共土木工事プロジェクトの分析
 
-このデータからJSON構造を生成してください。出力はJSONのみ（説明文不要）:
+以下はフォルダ構成サマリです。出力はJSONのみ（説明文不要）。
+
+## ドメイン知識（重要）
+
+日本の公共工事には明確なマイルストーンがある:
+- **入札日**: 競争入札に参加した日
+- **契約日**: 発注者と契約を締結した日
+- **着工日**: 現場作業を開始した日（着工届の日付が根拠）
+- **竣工日**: 工事完了・引渡しの日（竣工届の日付が根拠）
+- **工期**: 契約上の着工日〜竣工日。これが「この工事の期間」
+
+ファイル日付の注意:
+- 建設業許可証（2018年等）、保険証書、過去の参考資料は**工事より何年も前の日付**を持つ。これらは他案件からの持ち回り書類であり、工期の判定に使ってはならない
+- **着工時フォルダ**のファイル集中日付 = 着工日の推定根拠
+- **変更契約・竣工フォルダ**のファイル集中日付 = 竣工日の推定根拠
+- **契約時フォルダ**の契約書日付 = 契約日の推定根拠
+
+フォルダ番号は時系列ではなく「中身を置く用事ができた順」に作られる。
+
+## フェーズの実態
+
+公共舗装工事では以下が**並列**で走る:
+1. 着手準備（契約直後）: 契約処理、道路使用許可（警察待ち）、施工計画書、材料確認、施工体制、設計照査 → 第1回打合せ
+2. 施工準備: 地下埋設確認、安全書類、下請確定
+3. 施工本番: 切削→舗装→区画線。写真・出来形・品質管理・温度管理・週報が毎日
+4. 竣工処理: 実施数量、検査評定、創意工夫、変更契約
+
+## 出力JSON構造
+
 {
   "project_name": "工事名",
-  "work_type": "工種",
-  "period": { "start": "YYYY-MM", "end": "YYYY-MM" },
-  "subcontractors": ["下請業者名（フォルダ名やファイル名から推定）"],
+  "work_type": "工種（舗装補修/舗装打換/区画線等）",
+  "milestones": {
+    "bid_date": "YYYY-MM-DD（入札日、推定）",
+    "contract_date": "YYYY-MM-DD（契約日、推定）",
+    "start_date": "YYYY-MM-DD（着工日、推定）",
+    "end_date": "YYYY-MM-DD（竣工日、推定）",
+    "duration_days": 0
+  },
+  "subcontractors": ["下請業者名"],
   "folders": [
-    { "name": "フォルダ名", "file_count": 0, "date_range": "YYYY-MM-DD~YYYY-MM-DD", "summary": "内容" }
+    { "name": "フォルダ名", "file_count": 0, "activity_period": "YYYY-MM-DD~YYYY-MM-DD", "summary": "内容" }
   ],
   "phases": [
-    { "name": "フェーズ名", "period": "YYYY-MM~YYYY-MM", "parallel_tasks": ["同時作業"], "description": "説明" }
+    {
+      "name": "フェーズ名",
+      "period": "YYYY-MM-DD~YYYY-MM-DD",
+      "parallel_tasks": ["同時に走る作業"],
+      "folders_involved": ["関連フォルダ名"],
+      "description": "説明"
+    }
   ],
   "deliverables": { "photos": 0, "pdfs": 0, "spreadsheets": 0, "cad_files": 0, "total": 0 },
-  "insights": ["知見3-5個"]
+  "insights": ["この工事固有の知見3-5個。一般論は不要"]
 }
 
-注意: フォルダ番号≠時系列。日付から実際の作業順序を推定せよ。並列作業を特定せよ。
+activity_period注意: 持ち回り書類（許可証等）の古い日付は除外し、この工事で実際に作業が発生した期間のみ記載せよ。
 
 ---
 HEADER
@@ -63,12 +103,14 @@ awk -F'/' '
   split($1, a, " ")
   ts = a[1]
   size = a[2]
-  # 第1レベルフォルダを取得
-  folder = $1
-  sub(/^[0-9.]+ [0-9]+ /, "", folder)
-  if (folder ~ /\//) {
-    n = split(folder, parts, "/")
+  # 第1レベルフォルダを取得（相対パスから）
+  relpath = $0
+  sub(/^[0-9.]+ [0-9]+ /, "", relpath)
+  if (relpath ~ /\//) {
+    n = split(relpath, parts, "/")
     folder = parts[1]
+  } else {
+    folder = "(root)"
   }
 
   # フォルダごとに集計
