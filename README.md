@@ -38,10 +38,10 @@
 
 ```json
 {
-  "project_name": "市道 南千反畑町第１号線舗装補修工事",
+  "project_name": "〇〇市道 第X号線舗装補修工事",
   "work_type": "舗装補修工事",
   "period": { "start": "2025-09", "end": "2026-03" },
-  "subcontractors": ["アイエスティー", "ユナイト"],
+  "subcontractors": ["A社", "B社"],
   "folders": [
     { "name": "施工計画書", "file_count": 95, "date_range": "2025-12~2026-03", "summary": "..." }
   ],

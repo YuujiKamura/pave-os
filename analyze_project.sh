@@ -1,6 +1,6 @@
 #!/bin/bash
 # PaveOS: 完成工事フォルダをGeminiに食わせてナレッジ化する
-# Usage: ./analyze_project.sh "H:/マイドライブ/〇市道 南千反畑町第１号線舗装補修工事"
+# Usage: ./analyze_project.sh "H:/マイドライブ/〇〇舗装補修工事"
 
 set -euo pipefail
 
