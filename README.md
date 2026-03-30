@@ -14,11 +14,6 @@
 出力: `output/YYYYMMDD_HHMMSS_工事名.json`
 
 
-### 環境変数
-
-| 変数 | デフォルト | 説明 |
-|------|-----------|------|
-| `PAVEOS_MODEL` | `gemini-2.5-flash` | 使用するGeminiモデル |
 
 ## 出力例
 
