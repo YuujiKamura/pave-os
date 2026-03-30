@@ -13,11 +13,6 @@
 
 出力: `output/YYYYMMDD_HHMMSS_工事名.json`
 
-### 必要なもの
-
-- bash（Git Bash可）
-- [Gemini CLI](https://github.com/google-gemini/gemini-cli)（認証済み）
-- `find` コマンド
 
 ### 環境変数
 
